@@ -8,8 +8,11 @@ add_library( # Sets the name of the library.
 
         SHARED
 
+        src/main/cpp/PaFFmpeg.cpp
         src/main/cpp/native-lib.cpp
-        src/main/cpp/PaFFmpeg.cpp)
+        src/main/cpp/PaCallJava.cpp
+        src/main/cpp/PaAudio.cpp)
+
 
 add_library(avcodec-57 SHARED IMPORTED)
 set_target_properties(avcodec-57

@@ -37,4 +37,8 @@ public class ParrotPlayer {
 
     private native void n_prepared(String dataSource);
 
+    private void onPrepared() {
+
+    }
+
 }

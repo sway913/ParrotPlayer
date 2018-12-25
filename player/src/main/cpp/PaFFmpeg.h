@@ -7,6 +7,8 @@
 
 #include <pthread.h>
 #include "AndroidLog.h"
+#include "PaAudio.h"
+#include "PaCallJava.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -14,11 +16,14 @@ extern "C" {
 
 class PaFFmpeg {
 public:
+    const char *url = NULL;
+    pthread_t decodeThread;
     AVFormatContext *avFormatContext = NULL;
-    pthread_t *decodeThread;
+    PaAudio *paAudio = NULL;
+    PaCallJava *paCallJava = NULL;
 
 public:
-    PaFFmpeg();
+    PaFFmpeg(PaCallJava *paCallJava, const char *url);
 
     ~PaFFmpeg();
 
