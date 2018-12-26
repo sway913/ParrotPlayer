@@ -28,8 +28,6 @@ JNIEXPORT void JNICALL
 Java_com_lijian_app_player_ParrotPlayer_n_1prepared(JNIEnv *env, jobject instance,
                                                     jstring dataSource_) {
     const char *dataSource = env->GetStringUTFChars(dataSource_, 0);
-    env->ReleaseStringUTFChars(dataSource_, dataSource);
-
     if (paFFmpeg == NULL) {
         PaCallJava *paCallJava = new PaCallJava(javaVM, env, instance);
         paFFmpeg = new PaFFmpeg(paCallJava, dataSource);

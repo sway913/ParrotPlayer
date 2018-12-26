@@ -1,5 +1,9 @@
 package com.lijian.app.player;
 
+import android.text.TextUtils;
+
+import com.lijian.app.player.listener.OnPreparedListener;
+
 /**
  * @Description:
  * @Author: lijian
@@ -21,7 +25,7 @@ public class ParrotPlayer {
 
 
     private String mDataSource;
-
+    private OnPreparedListener mOnPreparedListener;
 
     public String getDataSource() {
         return mDataSource;
@@ -31,14 +35,26 @@ public class ParrotPlayer {
         this.mDataSource = dataSource;
     }
 
+    public OnPreparedListener getOnPreparedListener() {
+        return mOnPreparedListener;
+    }
+
+    public void setOnPreparedListener(OnPreparedListener onPreparedListener) {
+        this.mOnPreparedListener = onPreparedListener;
+    }
+
     public void prepared() {
-        n_prepared("hello");
+        if (!TextUtils.isEmpty(mDataSource)) {
+            n_prepared(mDataSource);
+        }
     }
 
     private native void n_prepared(String dataSource);
 
     private void onPrepared() {
-
+        if (mOnPreparedListener != null) {
+            mOnPreparedListener.onPrepared();
+        }
     }
 
 }
