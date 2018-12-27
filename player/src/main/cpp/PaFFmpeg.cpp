@@ -10,6 +10,7 @@ void *decodeFFmpeg(void *data) {
 }
 
 void PaFFmpeg::prepared() {
+    LOGE("===> prepared")
     pthread_create(&decodeThread, NULL, decodeFFmpeg, this);
 }
 
@@ -35,7 +36,7 @@ void PaFFmpeg::decodeFFmpegThread() {
     for (int i = 0; i < avFormatContext->nb_streams; ++i) {
         if (avFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (paAudio == NULL) {
-                paAudio = new PaAudio();
+                paAudio = new PaAudio(paPlayStatus);
                 paAudio->streamIndex = i;
                 paAudio->codecPar = avFormatContext->streams[i]->codecpar;
             }
@@ -65,14 +66,54 @@ void PaFFmpeg::decodeFFmpegThread() {
     paCallJava->callOnPrepared(CHILD_THREAD);
 }
 
-PaFFmpeg::PaFFmpeg(PaCallJava *paCallJava, const char *url) {
-    LOGE("===> PaFFmpeg")
+PaFFmpeg::PaFFmpeg(PaPlayStatus *paPlayStatus, PaCallJava *paCallJava, const char *url) {
+    this->paPlayStatus = paPlayStatus;
     this->paCallJava = paCallJava;
     this->url = url;
 }
 
 PaFFmpeg::~PaFFmpeg() {
     LOGE("===> ~PaFFmpeg")
+}
+
+void PaFFmpeg::start() {
+    // audio play
+
+    // decode
+    LOGE("decode start")
+    int count = 0;
+    while (paPlayStatus != NULL && !paPlayStatus->isExist) {
+        AVPacket *avPacket = av_packet_alloc();
+        if (av_read_frame(avFormatContext, avPacket) == 0) {
+            if (avPacket->stream_index == paAudio->streamIndex) {
+                LOGE("decode %d 帧", count);
+                count++;
+                // 入队
+                paAudio->paQueue->putAvPacket(avPacket);
+            } else {
+                av_packet_free(&avPacket);
+                av_free(avPacket);
+            }
+        } else {
+            av_packet_free(&avPacket);
+            av_free(avPacket);
+            // set play status
+//            while (paPlayStatus != NULL && !paPlayStatus->isExist) {
+//                if (paAudio->paQueue->getQueueSize() > 0) {
+//                    LOGE("wtf,需要检查下这里！")
+//                    continue;
+//                } else {
+//                    paPlayStatus->isExist = true;
+//                }
+//                break;
+//            }
+            LOGE("av_read_frame(avFormatContext, avPacket) != 0");
+            break;
+        }
+    }
+
+    LOGE("decode end")
+
 }
 
 

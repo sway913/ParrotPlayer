@@ -10,6 +10,8 @@ add_library( # Sets the name of the library.
 
         src/main/cpp/PaFFmpeg.cpp
         src/main/cpp/native-lib.cpp
+        src/main/cpp/PaQueue.cpp
+        src/main/cpp/PaPlayStatus.cpp
         src/main/cpp/PaCallJava.cpp
         src/main/cpp/PaAudio.cpp)
 

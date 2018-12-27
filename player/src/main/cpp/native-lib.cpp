@@ -4,6 +4,7 @@
 
 JavaVM *javaVM;
 PaFFmpeg *paFFmpeg = NULL;
+PaPlayStatus *paPlayStatus = NULL;
 
 extern "C" JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -30,7 +31,16 @@ Java_com_lijian_app_player_ParrotPlayer_n_1prepared(JNIEnv *env, jobject instanc
     const char *dataSource = env->GetStringUTFChars(dataSource_, 0);
     if (paFFmpeg == NULL) {
         PaCallJava *paCallJava = new PaCallJava(javaVM, env, instance);
-        paFFmpeg = new PaFFmpeg(paCallJava, dataSource);
+        paPlayStatus = new PaPlayStatus();
+        paFFmpeg = new PaFFmpeg(paPlayStatus, paCallJava, dataSource);
         paFFmpeg->prepared();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_lijian_app_player_ParrotPlayer_n_1start(JNIEnv *env, jobject instance) {
+    if (paFFmpeg != NULL) {
+        paFFmpeg->start();
     }
 }

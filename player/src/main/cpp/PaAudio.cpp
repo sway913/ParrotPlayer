@@ -5,8 +5,9 @@
 #include "PaAudio.h"
 
 
-PaAudio::PaAudio() {
-
+PaAudio::PaAudio(PaPlayStatus *paPlayStatus) {
+    this->paPlayStatus = paPlayStatus;
+    paQueue = new PaQueue(paPlayStatus);
 }
 
 PaAudio::~PaAudio() {

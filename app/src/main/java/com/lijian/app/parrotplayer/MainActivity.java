@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPrepared() {
                 Log.e(TAG, "onPrepared");
+                parrotPlayer.start();
             }
         });
         parrotPlayer.prepared();

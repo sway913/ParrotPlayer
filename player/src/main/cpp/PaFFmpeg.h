@@ -9,6 +9,7 @@
 #include "AndroidLog.h"
 #include "PaAudio.h"
 #include "PaCallJava.h"
+#include "PaPlayStatus.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -21,13 +22,16 @@ public:
     AVFormatContext *avFormatContext = NULL;
     PaAudio *paAudio = NULL;
     PaCallJava *paCallJava = NULL;
+    PaPlayStatus *paPlayStatus = NULL;
 
 public:
-    PaFFmpeg(PaCallJava *paCallJava, const char *url);
+    PaFFmpeg(PaPlayStatus *paPlayStatus, PaCallJava *paCallJava, const char *url);
 
     ~PaFFmpeg();
 
     void prepared();
+
+    void start();
 
     void decodeFFmpegThread();
 };

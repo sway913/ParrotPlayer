@@ -49,7 +49,13 @@ public class ParrotPlayer {
         }
     }
 
+    public void start(){
+        n_start();
+    }
+
     private native void n_prepared(String dataSource);
+
+    private native void n_start();
 
     private void onPrepared() {
         if (mOnPreparedListener != null) {
