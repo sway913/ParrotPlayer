@@ -36,7 +36,8 @@ void PaFFmpeg::decodeFFmpegThread() {
     for (int i = 0; i < avFormatContext->nb_streams; ++i) {
         if (avFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (paAudio == NULL) {
-                paAudio = new PaAudio(paPlayStatus);
+                paAudio = new PaAudio(paPlayStatus,
+                                      avFormatContext->streams[i]->codecpar->sample_rate);
                 paAudio->streamIndex = i;
                 paAudio->codecPar = avFormatContext->streams[i]->codecpar;
             }
