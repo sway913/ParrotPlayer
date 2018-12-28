@@ -9,6 +9,7 @@ PaAudio::PaAudio(PaPlayStatus *paPlayStatus, int sample_rate) {
     this->paPlayStatus = paPlayStatus;
     this->sample_rate = sample_rate;
     paQueue = new PaQueue(paPlayStatus);
+    buffer = (uint8_t *) av_malloc(sample_rate * 2 * 2);
 }
 
 PaAudio::~PaAudio() {
@@ -25,8 +26,18 @@ void PaAudio::play() {
     pthread_create(&threadPlay, NULL, decodePlay, this);
 }
 
-void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
-
+/**
+ * 注入灵魂
+ */
+void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bufferQueue, void *context) {
+    PaAudio *paAudio = (PaAudio *) context;
+    if (paAudio != NULL) {
+        int bufferSize = paAudio->resampleAudio();
+        if (bufferSize > 0) {
+            (*paAudio->pcmBufferQueue)->Enqueue(paAudio->pcmBufferQueue, (char *) paAudio->buffer,
+                                                bufferSize);
+        }
+    }
 }
 
 void PaAudio::initOpenSLES() {
@@ -80,8 +91,8 @@ void PaAudio::initOpenSLES() {
     // 注册回调缓冲区，获取缓冲队列接口
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_BUFFERQUEUE, &pcmBufferQueue);
     (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue, pcmBufferCallBack, this);
-    (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_PLAYING);
 
+    (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_PLAYING);
     pcmBufferCallBack(pcmBufferQueue, this);
 }
 
@@ -131,4 +142,80 @@ int PaAudio::getCurrentSampleRateForOpensles(int sample_rate) {
             rate = SL_SAMPLINGRATE_44_1;
     }
     return rate;
+}
+
+
+int PaAudio::resampleAudio() {
+    while (paPlayStatus != NULL && !paPlayStatus->isExist) {
+        avPacket = av_packet_alloc();
+        if (paQueue->getAvPacket(avPacket) != 0) {
+            av_packet_free(&avPacket);
+            av_free(avPacket);
+            avPacket = NULL;
+            continue;
+        }
+
+        // 解码
+        ret = avcodec_send_packet(avCodecContext, avPacket);
+        if (ret != 0) {
+            av_packet_free(&avPacket);
+            av_free(avPacket);
+            avPacket = NULL;
+            continue;
+        }
+        avFrame = av_frame_alloc();
+        // get soul avframe
+        ret = avcodec_receive_frame(avCodecContext, avFrame);
+        if (ret == 0) {
+            if (avFrame->channels && avFrame->channel_layout == 0) {
+                avFrame->channel_layout = av_get_default_channel_layout(avFrame->channels);
+            } else if (avFrame->channels == 0 && avFrame->channel_layout > 0) {
+                avFrame->channels = av_get_channel_layout_nb_channels(avFrame->channel_layout);
+            }
+
+            SwrContext *swrContext;
+            swrContext = swr_alloc_set_opts(NULL,
+                                            AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16,
+                                            avFrame->sample_rate,
+                                            avFrame->channel_layout,
+                                            (AVSampleFormat) avFrame->format, avFrame->sample_rate,
+                                            NULL,
+                                            NULL);
+            if (!swrContext || swr_init(swrContext) < 0) {
+                av_packet_free(&avPacket);
+                av_free(avPacket);
+                avPacket = NULL;
+                av_frame_free(&avFrame);
+                av_free(avFrame);
+                avFrame = NULL;
+                swr_free(&swrContext);
+            }
+
+            /**
+             * 最终目标 data,data_size
+             */
+            int nb = swr_convert(swrContext, &buffer, avFrame->nb_samples,
+                                 (const uint8_t **) avFrame->data, avFrame->nb_samples);
+            int out_channels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
+            data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+            LOGE("data size is %d", data_size);
+            av_packet_free(&avPacket);
+            av_free(avPacket);
+            avPacket = NULL;
+            av_frame_free(&avFrame);
+            av_free(avFrame);
+            avFrame = NULL;
+            swr_free(&swrContext);
+            break;
+        } else {
+            av_packet_free(&avPacket);
+            av_free(avPacket);
+            avPacket = NULL;
+            av_frame_free(&avFrame);
+            av_free(avFrame);
+            avFrame = NULL;
+            continue;
+        }
+    }
+    return data_size;
 }

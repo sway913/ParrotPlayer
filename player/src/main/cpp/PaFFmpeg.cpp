@@ -79,6 +79,11 @@ PaFFmpeg::~PaFFmpeg() {
 
 void PaFFmpeg::start() {
     // audio play
+    if (paAudio == NULL) {
+        LOGE("paAudio==NULL");
+        return;
+    }
+    paAudio->play();
 
     // decode
     LOGE("decode start")

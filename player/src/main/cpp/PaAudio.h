@@ -25,7 +25,12 @@ public:
     PaQueue *paQueue;
     pthread_t threadPlay;
 
+    AVPacket *avPacket = NULL;
+    AVFrame *avFrame = NULL;
     int sample_rate = 0;
+    uint8_t *buffer = NULL;
+    int ret = 0;
+    int data_size = 0;
 
     // 引擎接口
     SLObjectItf engineObject = NULL;
@@ -51,6 +56,8 @@ public:
     void initOpenSLES();
 
     int getCurrentSampleRateForOpensles(int sample_rate);
+
+    int resampleAudio();
 };
 
 
