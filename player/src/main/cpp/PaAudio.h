@@ -8,6 +8,7 @@
 #include "PaPlayStatus.h"
 #include "PaQueue.h"
 #include "AndroidLog.h"
+#include "PaCallJava.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -32,6 +33,14 @@ public:
     int ret = 0;
     int data_size = 0;
 
+    int duration = 0;
+    double clock; //总的播放时长
+    double now_time; //当前frame时间
+    double last_time;
+    AVRational time_base;
+
+    PaCallJava *paCallJava = NULL;
+
     // 引擎接口
     SLObjectItf engineObject = NULL;
     SLEngineItf engineEngine = NULL;
@@ -47,7 +56,7 @@ public:
 
 
 public:
-    PaAudio(PaPlayStatus *paPlayStatus, int sample_rate);
+    PaAudio(PaPlayStatus *paPlayStatus, int sample_rate, PaCallJava *paCallJava);
 
     ~PaAudio();
 
@@ -58,6 +67,10 @@ public:
     int getCurrentSampleRateForOpensles(int sample_rate);
 
     int resampleAudio();
+
+    void pause();
+
+    void resume();
 };
 
 

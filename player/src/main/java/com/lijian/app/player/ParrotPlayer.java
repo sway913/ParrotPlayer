@@ -2,7 +2,10 @@ package com.lijian.app.player;
 
 import android.text.TextUtils;
 
+import com.lijian.app.player.bean.PaTimeInfo;
 import com.lijian.app.player.listener.OnPreparedListener;
+import com.lijian.app.player.listener.OnResumeListener;
+import com.lijian.app.player.listener.OnTimeInfoListener;
 
 /**
  * @Description:
@@ -26,6 +29,9 @@ public class ParrotPlayer {
 
     private String mDataSource;
     private OnPreparedListener mOnPreparedListener;
+    private OnTimeInfoListener mOnTimeInfoListener;
+    private OnResumeListener mOnResumeListener;
+    private PaTimeInfo mPaTimeInfo;
 
     public String getDataSource() {
         return mDataSource;
@@ -43,23 +49,69 @@ public class ParrotPlayer {
         this.mOnPreparedListener = onPreparedListener;
     }
 
+    public OnTimeInfoListener getOnTimeInfoListener() {
+        return mOnTimeInfoListener;
+    }
+
+    public void setOnTimeInfoListener(OnTimeInfoListener onTimeInfoListener) {
+        this.mOnTimeInfoListener = onTimeInfoListener;
+    }
+
+    public OnResumeListener getmOnResumeListener() {
+        return mOnResumeListener;
+    }
+
+    public void setOnResumeListener(OnResumeListener onResumeListener) {
+        this.mOnResumeListener = onResumeListener;
+    }
+
     public void prepared() {
         if (!TextUtils.isEmpty(mDataSource)) {
             n_prepared(mDataSource);
         }
     }
 
-    public void start(){
+    public void start() {
         n_start();
+    }
+
+    public void pause(){
+        n_pause();
+        if(mOnResumeListener!=null){
+            mOnResumeListener.onPause(true);
+        }
+    }
+
+    public void resume(){
+        n_resume();
+        if(mOnResumeListener!=null){
+            mOnResumeListener.onPause(false);
+        }
     }
 
     private native void n_prepared(String dataSource);
 
     private native void n_start();
 
-    private void onPrepared() {
+    private native void n_pause();
+
+    private native void n_resume();
+
+
+    private void onCallPrepared() {
         if (mOnPreparedListener != null) {
             mOnPreparedListener.onPrepared();
+        }
+    }
+
+    private void onCallTimeInfo(int totalTime, int currTime) {
+        if (mOnTimeInfoListener != null) {
+            if (mPaTimeInfo == null) {
+                mPaTimeInfo = new PaTimeInfo();
+            }
+            mPaTimeInfo.setTotalTime(totalTime);
+            mPaTimeInfo.setCurrTime(currTime);
+            mOnTimeInfoListener.onTimeInfo(mPaTimeInfo);
         }
     }
 

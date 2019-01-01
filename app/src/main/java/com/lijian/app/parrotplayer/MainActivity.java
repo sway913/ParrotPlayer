@@ -7,9 +7,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.lijian.app.player.ParrotPlayer;
+import com.lijian.app.player.bean.PaTimeInfo;
 import com.lijian.app.player.listener.OnPreparedListener;
+import com.lijian.app.player.listener.OnResumeListener;
+import com.lijian.app.player.listener.OnTimeInfoListener;
+import com.lijian.app.player.utils.PaTimeUtil;
 
 public class MainActivity extends AppCompatActivity {
     private static String TAG = "MainActivity";
@@ -19,26 +24,42 @@ public class MainActivity extends AppCompatActivity {
             "android.permission.WRITE_EXTERNAL_STORAGE"};
 
     ParrotPlayer parrotPlayer;
+    TextView tvTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        tvTime = findViewById(R.id.tv_time);
+
+        verifyStoragePermissions(this);
 
         parrotPlayer = new ParrotPlayer();
-        verifyStoragePermissions(this);
-    }
-
-    public void start(View view) {
-        parrotPlayer.setDataSource("/sdcard/mid.mp3");
         parrotPlayer.setOnPreparedListener(new OnPreparedListener() {
             @Override
             public void onPrepared() {
-                Log.e(TAG, "onPrepared");
+                Log.e(TAG, "---> onPrepared,start play music");
                 parrotPlayer.start();
             }
         });
-        parrotPlayer.prepared();
+        parrotPlayer.setOnTimeInfoListener(new OnTimeInfoListener() {
+            @Override
+            public void onTimeInfo(final PaTimeInfo timeInfo) {
+                tvTime.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        tvTime.setText(PaTimeUtil.secdsToDateFormat(timeInfo.getTotalTime(), timeInfo.getTotalTime()) + "/" +
+                                PaTimeUtil.secdsToDateFormat(timeInfo.getCurrTime(), timeInfo.getTotalTime()));
+                    }
+                });
+            }
+        });
+        parrotPlayer.setOnResumeListener(new OnResumeListener() {
+            @Override
+            public void onPause(boolean pause) {
+                Log.e(TAG, "---> play status is pause:" + pause);
+            }
+        });
     }
 
 
@@ -56,4 +77,31 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+
+    public void onBegin(View view) {
+//        parrotPlayer.setDataSource("/sdcard/mid.mp3");
+        parrotPlayer.setDataSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
+        parrotPlayer.prepared();
+    }
+
+    /**
+     * 去暂停
+     *
+     * @param view
+     */
+    public void onPause(View view) {
+        parrotPlayer.pause();
+    }
+
+    /**
+     * 去播放
+     *
+     * @param view
+     */
+    public void onResume(View view) {
+        parrotPlayer.resume();
+    }
+
+
 }

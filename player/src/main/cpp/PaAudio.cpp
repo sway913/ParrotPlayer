@@ -5,9 +5,10 @@
 #include "PaAudio.h"
 
 
-PaAudio::PaAudio(PaPlayStatus *paPlayStatus, int sample_rate) {
+PaAudio::PaAudio(PaPlayStatus *paPlayStatus, int sample_rate, PaCallJava *paCallJava) {
     this->paPlayStatus = paPlayStatus;
     this->sample_rate = sample_rate;
+    this->paCallJava = paCallJava;
     paQueue = new PaQueue(paPlayStatus);
     buffer = (uint8_t *) av_malloc(sample_rate * 2 * 2);
 }
@@ -34,6 +35,13 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bufferQueue, void *context)
     if (paAudio != NULL) {
         int bufferSize = paAudio->resampleAudio();
         if (bufferSize > 0) {
+            paAudio->clock += bufferSize / ((double) paAudio->sample_rate * 2 * 2);
+            // tell timeinfo
+            if (paAudio->clock - paAudio->last_time >= 0.1) {
+                paAudio->last_time = paAudio->clock;
+                paAudio->paCallJava->callOnTimeInfo(CHILD_THREAD, paAudio->duration,
+                                                    paAudio->clock);
+            }
             (*paAudio->pcmBufferQueue)->Enqueue(paAudio->pcmBufferQueue, (char *) paAudio->buffer,
                                                 bufferSize);
         }
@@ -156,7 +164,7 @@ int PaAudio::resampleAudio() {
         }
 
         // 解码
-        ret = avcodec_send_packet(avCodecContext, avPacket);
+        ret = avcodec_send_packet(avCodecContext, avPacket); // packet送到解码器
         if (ret != 0) {
             av_packet_free(&avPacket);
             av_free(avPacket);
@@ -165,7 +173,7 @@ int PaAudio::resampleAudio() {
         }
         avFrame = av_frame_alloc();
         // get soul avframe
-        ret = avcodec_receive_frame(avCodecContext, avFrame);
+        ret = avcodec_receive_frame(avCodecContext, avFrame); // 取出解码后的frame
         if (ret == 0) {
             if (avFrame->channels && avFrame->channel_layout == 0) {
                 avFrame->channel_layout = av_get_default_channel_layout(avFrame->channels);
@@ -198,6 +206,14 @@ int PaAudio::resampleAudio() {
                                  (const uint8_t **) avFrame->data, avFrame->nb_samples);
             int out_channels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+
+            // cal time
+            now_time = avFrame->pts * av_q2d(time_base);
+            if (now_time < clock) {
+                now_time = clock;
+            }
+            clock = now_time;
+
             LOGE("data size is %d", data_size);
             av_packet_free(&avPacket);
             av_free(avPacket);
@@ -218,4 +234,16 @@ int PaAudio::resampleAudio() {
         }
     }
     return data_size;
+}
+
+void PaAudio::pause() {
+    if (pcmPlayerPlay != NULL) {
+        (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_PAUSED);
+    }
+}
+
+void PaAudio::resume() {
+    if (pcmPlayerPlay != NULL) {
+        (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_PLAYING);
+    }
 }

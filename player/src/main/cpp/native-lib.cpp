@@ -44,3 +44,19 @@ Java_com_lijian_app_player_ParrotPlayer_n_1start(JNIEnv *env, jobject instance) 
         paFFmpeg->start();
     }
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_lijian_app_player_ParrotPlayer_n_1pause(JNIEnv *env, jobject instance) {
+    if (paFFmpeg != NULL) {
+        paFFmpeg->pause();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_lijian_app_player_ParrotPlayer_n_1resume(JNIEnv *env, jobject instance) {
+    if (paFFmpeg != NULL) {
+        paFFmpeg->resume();
+    }
+}

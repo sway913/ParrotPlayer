@@ -37,9 +37,12 @@ void PaFFmpeg::decodeFFmpegThread() {
         if (avFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (paAudio == NULL) {
                 paAudio = new PaAudio(paPlayStatus,
-                                      avFormatContext->streams[i]->codecpar->sample_rate);
+                                      avFormatContext->streams[i]->codecpar->sample_rate,
+                                      paCallJava);
                 paAudio->streamIndex = i;
                 paAudio->codecPar = avFormatContext->streams[i]->codecpar;
+                paAudio->duration = avFormatContext->duration / AV_TIME_BASE;
+                paAudio->time_base = avFormatContext->streams[i]->time_base;
             }
         }
     }
@@ -120,6 +123,18 @@ void PaFFmpeg::start() {
 
     LOGE("decode end")
 
+}
+
+void PaFFmpeg::pause() {
+    if (paAudio != NULL) {
+        paAudio->pause();
+    }
+}
+
+void PaFFmpeg::resume() {
+    if (paAudio != NULL) {
+        paAudio->resume();
+    }
 }
 
 

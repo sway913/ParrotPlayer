@@ -17,7 +17,8 @@ public:
     JavaVM *javaVM = NULL;
     JNIEnv *jniEnv = NULL;
     jobject jb;
-    jmethodID jmethodID_onprepared;
+    jmethodID jmethodID_onCallPrepared;
+    jmethodID jmethodID_onCallTimeInfo;
 
 public:
     PaCallJava(JavaVM *javaVM, JNIEnv *jniEnv, jobject jb);
@@ -25,6 +26,8 @@ public:
     ~PaCallJava();
 
     void callOnPrepared(int type);
+
+    void callOnTimeInfo(int type, int totalTime, int currTime);
 };
 
 
