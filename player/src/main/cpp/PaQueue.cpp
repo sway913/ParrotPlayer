@@ -4,6 +4,9 @@
 #include "PaQueue.h"
 #include "AndroidLog.h"
 
+/**
+ * note:push完，主动通知消费者
+ */
 int PaQueue::putAvPacket(AVPacket *avPacket) {
     pthread_mutex_lock(&mutexAvPacket);
     queueAvPacket.push(avPacket);
