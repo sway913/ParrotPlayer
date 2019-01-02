@@ -143,6 +143,7 @@ void PaFFmpeg::seek(int seconds) {
     }
     if (seconds >= 0 && seconds <= duration) {
         if (paAudio != NULL) {
+            paAudio->pause();
             paPlayStatus->seek = true;
             // reset time
             paAudio->clock = 0;
@@ -154,6 +155,7 @@ void PaFFmpeg::seek(int seconds) {
             avformat_seek_file(avFormatContext, -1, INT64_MIN, seekTime, INT64_MAX, 0);
             paPlayStatus->seek = false;
             pthread_cond_broadcast(&paPlayStatus->seekCon);
+            paAudio->resume();
             LOGE("seek signal")
         }
     }
