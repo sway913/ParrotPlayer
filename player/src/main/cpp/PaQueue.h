@@ -31,6 +31,8 @@ public:
     int getAvPacket(AVPacket *avPacket);
 
     int getQueueSize();
+
+    void clearAvPacket();
 };
 
 #endif //PARROTPLAYER_PAQUEUE_H

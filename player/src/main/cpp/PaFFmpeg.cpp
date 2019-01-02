@@ -43,6 +43,7 @@ void PaFFmpeg::decodeFFmpegThread() {
                 paAudio->codecPar = avFormatContext->streams[i]->codecpar;
                 paAudio->duration = avFormatContext->duration / AV_TIME_BASE;
                 paAudio->time_base = avFormatContext->streams[i]->time_base;
+                duration = paAudio->duration;
             }
         }
     }
@@ -92,6 +93,14 @@ void PaFFmpeg::start() {
     LOGE("decode start")
     int count = 0;
     while (paPlayStatus != NULL && !paPlayStatus->isExist) {
+        if (paPlayStatus->seek) {
+            LOGE("PaFFmpeg decode seek wait")
+            pthread_cond_wait(&paPlayStatus->seekCon, NULL);
+            LOGE("PaFFmpeg decode seek up")
+        }
+        if (paAudio->paQueue->getQueueSize() > 40) {
+            continue;
+        }
         AVPacket *avPacket = av_packet_alloc();
         if (av_read_frame(avFormatContext, avPacket) == 0) {
             if (avPacket->stream_index == paAudio->streamIndex) {
@@ -106,16 +115,6 @@ void PaFFmpeg::start() {
         } else {
             av_packet_free(&avPacket);
             av_free(avPacket);
-            // set play status
-//            while (paPlayStatus != NULL && !paPlayStatus->isExist) {
-//                if (paAudio->paQueue->getQueueSize() > 0) {
-//                    LOGE("wtf,需要检查下这里！")
-//                    continue;
-//                } else {
-//                    paPlayStatus->isExist = true;
-//                }
-//                break;
-//            }
             LOGE("av_read_frame(avFormatContext, avPacket) != 0");
             break;
         }
@@ -134,6 +133,29 @@ void PaFFmpeg::pause() {
 void PaFFmpeg::resume() {
     if (paAudio != NULL) {
         paAudio->resume();
+    }
+}
+
+void PaFFmpeg::seek(int seconds) {
+    LOGE("seek time :%d", seconds)
+    if (duration <= 0) {
+        return;
+    }
+    if (seconds >= 0 && seconds <= duration) {
+        if (paAudio != NULL) {
+            paPlayStatus->seek = true;
+            // reset time
+            paAudio->clock = 0;
+            paAudio->last_time = 0;
+            //
+            paAudio->paQueue->clearAvPacket();
+
+            int64_t seekTime = seconds * AV_TIME_BASE;
+            avformat_seek_file(avFormatContext, -1, INT64_MIN, seekTime, INT64_MAX, 0);
+            paPlayStatus->seek = false;
+            pthread_cond_broadcast(&paPlayStatus->seekCon);
+            LOGE("seek signal")
+        }
     }
 }
 

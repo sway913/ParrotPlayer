@@ -5,10 +5,14 @@
 #ifndef PARROTPLAYER_PAPLAYSTATUS_H
 #define PARROTPLAYER_PAPLAYSTATUS_H
 
+#include <pthread.h>
 
-class PaPlayStatus{
+class PaPlayStatus {
 public:
     bool isExist;
+    bool seek;
+
+    pthread_cond_t seekCon;
 
 public:
     PaPlayStatus();

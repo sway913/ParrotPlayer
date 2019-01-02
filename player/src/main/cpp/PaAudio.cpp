@@ -155,6 +155,12 @@ int PaAudio::getCurrentSampleRateForOpensles(int sample_rate) {
 
 int PaAudio::resampleAudio() {
     while (paPlayStatus != NULL && !paPlayStatus->isExist) {
+        if (paPlayStatus->seek) {
+            LOGE("PaAudio decode seek wait")
+            pthread_cond_wait(&paPlayStatus->seekCon, NULL);
+            LOGE("PaAudio decode seek up")
+        }
+
         avPacket = av_packet_alloc();
         if (paQueue->getAvPacket(avPacket) != 0) {
             av_packet_free(&avPacket);
@@ -214,7 +220,7 @@ int PaAudio::resampleAudio() {
             }
             clock = now_time;
 
-            LOGE("data size is %d", data_size);
+//            LOGE("data size is %d", data_size);
             av_packet_free(&avPacket);
             av_free(avPacket);
             avPacket = NULL;

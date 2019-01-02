@@ -23,6 +23,7 @@ public:
     PaAudio *paAudio = NULL;
     PaCallJava *paCallJava = NULL;
     PaPlayStatus *paPlayStatus = NULL;
+    int duration = 0;
 
 public:
     PaFFmpeg(PaPlayStatus *paPlayStatus, PaCallJava *paCallJava, const char *url);
@@ -38,6 +39,8 @@ public:
     void pause();
 
     void resume();
+
+    void seek(int seconds);
 };
 
 

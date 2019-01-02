@@ -5,5 +5,6 @@
 #include "PaPlayStatus.h"
 
 PaPlayStatus::PaPlayStatus() {
-    isExist= false;
+    isExist = false;
+    pthread_cond_init(&seekCon, NULL);
 }

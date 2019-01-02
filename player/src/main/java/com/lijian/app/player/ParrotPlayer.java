@@ -75,18 +75,26 @@ public class ParrotPlayer {
         n_start();
     }
 
-    public void pause(){
+    public void pause() {
         n_pause();
-        if(mOnResumeListener!=null){
+        if (mOnResumeListener != null) {
             mOnResumeListener.onPause(true);
         }
     }
 
-    public void resume(){
+    public void resume() {
         n_resume();
-        if(mOnResumeListener!=null){
+        if (mOnResumeListener != null) {
             mOnResumeListener.onPause(false);
         }
+    }
+
+    public void seek(int seconds) {
+        n_seek(seconds);
+    }
+
+    public int getDuration() {
+        return n_getDuration();
     }
 
     private native void n_prepared(String dataSource);
@@ -96,6 +104,10 @@ public class ParrotPlayer {
     private native void n_pause();
 
     private native void n_resume();
+
+    private native void n_seek(int seconds);
+
+    private native int n_getDuration();
 
 
     private void onCallPrepared() {

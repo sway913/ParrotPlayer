@@ -7,6 +7,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.lijian.app.player.ParrotPlayer;
@@ -25,12 +26,16 @@ public class MainActivity extends AppCompatActivity {
 
     ParrotPlayer parrotPlayer;
     TextView tvTime;
+    SeekBar sbSeek;
+    boolean fromUser;
+    int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tvTime = findViewById(R.id.tv_time);
+        sbSeek = findViewById(R.id.sb_seek);
 
         verifyStoragePermissions(this);
 
@@ -48,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 tvTime.post(new Runnable() {
                     @Override
                     public void run() {
+//                        sbSeek.setProgress((int) (100 * (timeInfo.getCurrTime() * 1.0f / timeInfo.getTotalTime())));
                         tvTime.setText(PaTimeUtil.secdsToDateFormat(timeInfo.getTotalTime(), timeInfo.getTotalTime()) + "/" +
                                 PaTimeUtil.secdsToDateFormat(timeInfo.getCurrTime(), timeInfo.getTotalTime()));
                     }
@@ -58,6 +64,28 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPause(boolean pause) {
                 Log.e(TAG, "---> play status is pause:" + pause);
+            }
+        });
+
+        sbSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                fromUser = b;
+                if (parrotPlayer.getDuration() > 0 && b) {
+                    position = (int) (parrotPlayer.getDuration() * i * 1.0f / 100);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (fromUser) {
+                    parrotPlayer.seek(position);
+                }
             }
         });
     }

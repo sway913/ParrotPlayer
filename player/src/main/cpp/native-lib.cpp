@@ -60,3 +60,20 @@ Java_com_lijian_app_player_ParrotPlayer_n_1resume(JNIEnv *env, jobject instance)
         paFFmpeg->resume();
     }
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_lijian_app_player_ParrotPlayer_n_1seek(JNIEnv *env, jobject instance, jint seconds) {
+    if (paFFmpeg != NULL) {
+        paFFmpeg->seek(seconds);
+    }
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_lijian_app_player_ParrotPlayer_n_1getDuration(JNIEnv *env, jobject instance) {
+    if (paFFmpeg != NULL) {
+        return paFFmpeg->duration;
+    }
+    return 0;
+}

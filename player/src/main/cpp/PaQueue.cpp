@@ -10,7 +10,7 @@
 int PaQueue::putAvPacket(AVPacket *avPacket) {
     pthread_mutex_lock(&mutexAvPacket);
     queueAvPacket.push(avPacket);
-    LOGE("push an packet into queue,queue size: %d", queueAvPacket.size())
+//    LOGE("push an packet into queue,queue size: %d", queueAvPacket.size())
     pthread_mutex_unlock(&mutexAvPacket);
     // notify
     pthread_cond_signal(&condAvPacket);
@@ -29,7 +29,7 @@ int PaQueue::getAvPacket(AVPacket *avPacket) {
             av_packet_free(&avPacketFront);
             av_free(avPacketFront);
             avPacketFront = NULL;
-            LOGE("pop an packet from queue,queue size: %d", queueAvPacket.size())
+//            LOGE("pop an packet from queue,queue size: %d", queueAvPacket.size())
             break;
         } else {
             pthread_cond_wait(&condAvPacket, &mutexAvPacket);
@@ -56,4 +56,16 @@ PaQueue::PaQueue(PaPlayStatus *paPlayStatus) {
 
 PaQueue::~PaQueue() {
 
+}
+
+void PaQueue::clearAvPacket() {
+    pthread_mutex_lock(&mutexAvPacket);
+    while (!queueAvPacket.empty()) {
+        AVPacket *avPacket = queueAvPacket.front();
+        queueAvPacket.pop();
+        av_packet_free(&avPacket);
+        av_free(avPacket);
+        avPacket = NULL;
+    }
+    pthread_mutex_unlock(&mutexAvPacket);
 }
