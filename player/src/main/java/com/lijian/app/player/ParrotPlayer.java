@@ -32,6 +32,7 @@ public class ParrotPlayer {
     private OnTimeInfoListener mOnTimeInfoListener;
     private OnResumeListener mOnResumeListener;
     private PaTimeInfo mPaTimeInfo;
+    private int mVolumePercent;
 
     public String getDataSource() {
         return mDataSource;
@@ -97,6 +98,17 @@ public class ParrotPlayer {
         return n_getDuration();
     }
 
+    public void setVolume(int percent) {
+        if (percent >= 0 && percent <= 100) {
+            mVolumePercent = percent;
+            n_setVolume(percent);
+        }
+    }
+
+    public void setMute(int mute) {
+        n_setMute(mute);
+    }
+
     private native void n_prepared(String dataSource);
 
     private native void n_start();
@@ -108,6 +120,10 @@ public class ParrotPlayer {
     private native void n_seek(int seconds);
 
     private native int n_getDuration();
+
+    private native void n_setVolume(int volume);
+
+    private native void n_setMute(int mute);
 
 
     private void onCallPrepared() {

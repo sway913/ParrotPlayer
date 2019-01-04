@@ -77,3 +77,19 @@ Java_com_lijian_app_player_ParrotPlayer_n_1getDuration(JNIEnv *env, jobject inst
     }
     return 0;
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_lijian_app_player_ParrotPlayer_n_1setVolume(JNIEnv *env, jobject instance, jint volume) {
+    if (paFFmpeg != NULL) {
+        paFFmpeg->setVolume(volume);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_lijian_app_player_ParrotPlayer_n_1setMute(JNIEnv *env, jobject instance, jint mute) {
+    if (paFFmpeg != NULL) {
+        paFFmpeg->setMute(mute);
+    }
+}

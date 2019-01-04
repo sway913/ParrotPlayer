@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     ParrotPlayer parrotPlayer;
     TextView tvTime;
     SeekBar sbSeek;
+    TextView tvVolume;
+    SeekBar sbVolume;
     boolean fromUser;
     int position;
 
@@ -36,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tvTime = findViewById(R.id.tv_time);
         sbSeek = findViewById(R.id.sb_seek);
+        tvVolume = findViewById(R.id.tv_volume);
+        sbVolume = findViewById(R.id.sb_volume);
 
         verifyStoragePermissions(this);
 
@@ -53,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
                 tvTime.post(new Runnable() {
                     @Override
                     public void run() {
-//                        sbSeek.setProgress((int) (100 * (timeInfo.getCurrTime() * 1.0f / timeInfo.getTotalTime())));
+                        sbSeek.setProgress((int) (100 * (timeInfo.getCurrTime() * 1.0f / timeInfo.getTotalTime())));
                         tvTime.setText(PaTimeUtil.secdsToDateFormat(timeInfo.getTotalTime(), timeInfo.getTotalTime()) + "/" +
                                 PaTimeUtil.secdsToDateFormat(timeInfo.getCurrTime(), timeInfo.getTotalTime()));
                     }
@@ -86,6 +90,26 @@ public class MainActivity extends AppCompatActivity {
                 if (fromUser) {
                     parrotPlayer.seek(position);
                 }
+            }
+        });
+
+        tvVolume.setText("音量:100%");
+        sbVolume.setProgress(100);
+        sbVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                parrotPlayer.setVolume(i);
+                tvVolume.setText("音量:" + i + "%");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
     }
@@ -132,4 +156,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public void onVolumeLeft(View view) {
+        parrotPlayer.setMute(0);
+    }
+
+    public void onVolumeRight(View view) {
+        parrotPlayer.setMute(1);
+    }
+
+    public void onVolumeStereo(View view) {
+        parrotPlayer.setMute(2);
+    }
 }

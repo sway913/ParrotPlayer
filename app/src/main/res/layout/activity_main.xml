@@ -34,13 +34,6 @@
 
     </LinearLayout>
 
-    <SeekBar
-        android:id="@+id/sb_seek"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:max="100"
-        android:layout_marginTop="10dp" />
-
     <TextView
         android:id="@+id/tv_time"
         android:layout_width="wrap_content"
@@ -49,4 +42,55 @@
         android:layout_marginTop="20dp"
         android:text="00:00/00:00"
         android:textColor="#222222" />
+
+    <SeekBar
+        android:id="@+id/sb_seek"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:max="100" />
+
+    <TextView
+        android:id="@+id/tv_volume"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"
+        android:text="音量:100%"
+        android:textColor="#222222" />
+
+    <SeekBar
+        android:id="@+id/sb_volume"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:max="100" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onVolumeLeft"
+            android:text="左声道" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onVolumeRight"
+            android:text="右声道" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onVolumeStereo"
+            android:text="立体声" />
+
+    </LinearLayout>
+
 </LinearLayout>

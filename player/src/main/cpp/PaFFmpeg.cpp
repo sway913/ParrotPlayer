@@ -161,5 +161,17 @@ void PaFFmpeg::seek(int seconds) {
     }
 }
 
+void PaFFmpeg::setVolume(int volumePercent) {
+    if (paAudio != NULL) {
+        paAudio->setVolume(volumePercent);
+    }
+}
+
+void PaFFmpeg::setMute(int mute) {
+    if (paAudio != NULL) {
+        paAudio->setMute(mute);
+    }
+}
+
 
 

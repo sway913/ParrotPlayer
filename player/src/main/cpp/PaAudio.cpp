@@ -87,19 +87,25 @@ void PaAudio::initOpenSLES() {
             &pcm
     };
 
-    const SLInterfaceID ids[1] = {SL_IID_BUFFERQUEUE};
-    const SLboolean reqs[1] = {SL_BOOLEAN_TRUE};
+    const SLInterfaceID ids[3] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME, SL_IID_MUTESOLO};
+    const SLboolean reqs[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
 
     // player
-    (*engineEngine)->CreateAudioPlayer(engineEngine, &pcmPlayerObject, &slDataSource, &audioSink, 1,
+    (*engineEngine)->CreateAudioPlayer(engineEngine, &pcmPlayerObject, &slDataSource, &audioSink, 3,
                                        ids, reqs);
     (*pcmPlayerObject)->Realize(pcmPlayerObject, SL_BOOLEAN_FALSE);
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_PLAY, &pcmPlayerPlay);
+
+    // volume
+    (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_VOLUME, &pcmVolume);
+    // mute
+    (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_MUTESOLO, &pcmMute);
 
     // 注册回调缓冲区，获取缓冲队列接口
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_BUFFERQUEUE, &pcmBufferQueue);
     (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue, pcmBufferCallBack, this);
 
+    setVolume(volumePercent);
     (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_PLAYING);
     pcmBufferCallBack(pcmBufferQueue, this);
 }
@@ -251,5 +257,51 @@ void PaAudio::pause() {
 void PaAudio::resume() {
     if (pcmPlayerPlay != NULL) {
         (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_PLAYING);
+    }
+}
+
+void PaAudio::setVolume(int percent) {
+    if (pcmVolume != NULL) {
+        if (percent > 30) {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -20);
+        } else if (percent > 25) {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -22);
+        } else if (percent > 20) {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -25);
+        } else if (percent > 15) {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -28);
+        } else if (percent > 10) {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -30);
+        } else if (percent > 5) {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -34);
+        } else if (percent > 3) {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -37);
+        } else if (percent > 0) {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -40);
+        } else {
+            (*pcmVolume)->SetVolumeLevel(pcmVolume, (100 - percent) * -100);
+        }
+    }
+}
+
+void PaAudio::setMute(int mute) {
+    if (pcmMute != NULL) {
+        switch (mute) {
+            case 0:
+                // left
+                (*pcmMute)->SetChannelMute(pcmMute, 0, true);
+                (*pcmMute)->SetChannelMute(pcmMute, 1, false);
+                break;
+            case 1:
+                // right
+                (*pcmMute)->SetChannelMute(pcmMute, 0, false);
+                (*pcmMute)->SetChannelMute(pcmMute, 1, true);
+                break;
+            case 2:
+                // stereo
+                (*pcmMute)->SetChannelMute(pcmMute, 0, true);
+                (*pcmMute)->SetChannelMute(pcmMute, 1, true);
+                break;
+        }
     }
 }

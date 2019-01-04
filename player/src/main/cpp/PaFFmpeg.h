@@ -41,6 +41,10 @@ public:
     void resume();
 
     void seek(int seconds);
+
+    void setVolume(int volumePercent);
+
+    void setMute(int mute);
 };
 
 
