@@ -109,6 +109,14 @@ public class ParrotPlayer {
         n_setMute(mute);
     }
 
+    public void setSpeed(float speed) {
+        n_setSpeed(speed);
+    }
+
+    public void setPitch(float pitch) {
+        n_setPitch(pitch);
+    }
+
     private native void n_prepared(String dataSource);
 
     private native void n_start();
@@ -124,6 +132,10 @@ public class ParrotPlayer {
     private native void n_setVolume(int volume);
 
     private native void n_setMute(int mute);
+
+    private native void n_setSpeed(float speed);
+
+    private native void n_setPitch(float pitch);
 
 
     private void onCallPrepared() {

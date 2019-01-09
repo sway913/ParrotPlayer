@@ -156,15 +156,62 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * 左声道
+     *
+     * @param view
+     */
     public void onVolumeLeft(View view) {
         parrotPlayer.setMute(0);
     }
 
+    /**
+     * 右声道
+     *
+     * @param view
+     */
     public void onVolumeRight(View view) {
         parrotPlayer.setMute(1);
     }
 
+    /**
+     * 立体声
+     *
+     * @param view
+     */
     public void onVolumeStereo(View view) {
         parrotPlayer.setMute(2);
+    }
+
+    /**
+     * 变速
+     *
+     * @param view
+     */
+    public void onSpeed(View view) {
+    }
+
+    /**
+     * 变调
+     *
+     * @param view
+     */
+    public void onTone(View view) {
+    }
+
+    /**
+     * 变速 && 变调
+     *
+     * @param view
+     */
+    public void onSpeedTone(View view) {
+    }
+
+    /**
+     * 正常播放（不变速，不变调）
+     *
+     * @param view
+     */
+    public void onNormalSpeedPitch(View view) {
     }
 }

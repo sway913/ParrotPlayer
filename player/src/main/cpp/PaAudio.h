@@ -9,6 +9,9 @@
 #include "PaQueue.h"
 #include "AndroidLog.h"
 #include "PaCallJava.h"
+#include "SoundTouch.h"
+
+using namespace soundtouch;
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -57,6 +60,10 @@ public:
     int volumePercent = 100;
     // 缓冲器队列接口
     SLAndroidSimpleBufferQueueItf pcmBufferQueue = NULL;
+    // soundtouch
+    SoundTouch *soundTouch = NULL;
+    float pitch = 1.0f;
+    float speed = 1.0f;
 
 
 public:
@@ -79,6 +86,12 @@ public:
     void setVolume(int percent);
 
     void setMute(int mute);
+
+    void setSpeed(float speed);
+
+    void setPitch(float pitch);
+
+    void getSoundTouchData();
 };
 
 

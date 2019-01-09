@@ -11,6 +11,12 @@ PaAudio::PaAudio(PaPlayStatus *paPlayStatus, int sample_rate, PaCallJava *paCall
     this->paCallJava = paCallJava;
     paQueue = new PaQueue(paPlayStatus);
     buffer = (uint8_t *) av_malloc(sample_rate * 2 * 2);
+
+    soundTouch = new SoundTouch();
+    soundTouch->setSampleRate(sample_rate);
+    soundTouch->setChannels(2);
+    soundTouch->setPitch(pitch);
+    soundTouch->setTempo(speed);
 }
 
 PaAudio::~PaAudio() {
@@ -304,4 +310,23 @@ void PaAudio::setMute(int mute) {
                 break;
         }
     }
+}
+
+void PaAudio::setSpeed(float speed) {
+    if (soundTouch != NULL) {
+        this->speed = speed;
+        soundTouch->setTempo(speed);
+    }
+}
+
+void PaAudio::setPitch(float pitch) {
+    if (soundTouch != NULL) {
+        this->pitch = pitch;
+        soundTouch->setPitch(pitch);
+    }
+}
+
+void PaAudio::getSoundTouchData() {
+
+
 }
