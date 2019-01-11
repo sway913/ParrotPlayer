@@ -37,7 +37,6 @@ public:
     int data_size = 0;
 
     int duration = 0;
-    double clock; //总的播放时长
     double now_time; //当前frame时间
     double last_time;
     AVRational time_base;
@@ -63,8 +62,10 @@ public:
     // soundtouch
     SoundTouch *soundTouch = NULL;
     float pitch = 1.0f;
-    float speed = 1.0f;
-
+    float tempo = 1.0f;
+    uint8_t *out_buffer = NULL;
+    SAMPLETYPE *sampleBuffer = NULL;
+    int nb;
 
 public:
     PaAudio(PaPlayStatus *paPlayStatus, int sample_rate, PaCallJava *paCallJava);
@@ -77,7 +78,7 @@ public:
 
     int getCurrentSampleRateForOpensles(int sample_rate);
 
-    int resampleAudio();
+    int resampleAudio(void **pcmBuffer);
 
     void pause();
 
@@ -87,11 +88,11 @@ public:
 
     void setMute(int mute);
 
-    void setSpeed(float speed);
+    void setTempo(float tempo);
 
     void setPitch(float pitch);
 
-    void getSoundTouchData();
+    int getSoundTouchData();
 };
 
 

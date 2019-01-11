@@ -12,11 +12,13 @@ PaAudio::PaAudio(PaPlayStatus *paPlayStatus, int sample_rate, PaCallJava *paCall
     paQueue = new PaQueue(paPlayStatus);
     buffer = (uint8_t *) av_malloc(sample_rate * 2 * 2);
 
+    sampleBuffer = static_cast<SAMPLETYPE *>(malloc(sample_rate * 2 * 2));
+
     soundTouch = new SoundTouch();
     soundTouch->setSampleRate(sample_rate);
     soundTouch->setChannels(2);
-    soundTouch->setPitch(pitch);
-    soundTouch->setTempo(speed);
+    soundTouch->setPitch(1.0f);
+    soundTouch->setTempo(1.0f);
 }
 
 PaAudio::~PaAudio() {
@@ -39,17 +41,21 @@ void PaAudio::play() {
 void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bufferQueue, void *context) {
     PaAudio *paAudio = (PaAudio *) context;
     if (paAudio != NULL) {
-        int bufferSize = paAudio->resampleAudio();
+//        int bufferSize = paAudio->resampleAudio(reinterpret_cast<void **>(&paAudio->sampleBuffer));
+        int bufferSize = paAudio->getSoundTouchData();
         if (bufferSize > 0) {
-            paAudio->clock += bufferSize / ((double) paAudio->sample_rate * 2 * 2);
             // tell timeinfo
-            if (paAudio->clock - paAudio->last_time >= 0.1) {
-                paAudio->last_time = paAudio->clock;
+            if (paAudio->now_time - paAudio->last_time >= 0.1) {
+                paAudio->last_time = paAudio->now_time;
                 paAudio->paCallJava->callOnTimeInfo(CHILD_THREAD, paAudio->duration,
-                                                    paAudio->clock);
+                                                    paAudio->now_time);
             }
-            (*paAudio->pcmBufferQueue)->Enqueue(paAudio->pcmBufferQueue, (char *) paAudio->buffer,
-                                                bufferSize);
+            // record
+
+            // volume db
+
+            (*paAudio->pcmBufferQueue)->Enqueue(paAudio->pcmBufferQueue,
+                                                (char *) paAudio->sampleBuffer, bufferSize * 2 * 2);
         }
     }
 }
@@ -93,12 +99,12 @@ void PaAudio::initOpenSLES() {
             &pcm
     };
 
-    const SLInterfaceID ids[3] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME, SL_IID_MUTESOLO};
-    const SLboolean reqs[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+    const SLInterfaceID ids[4] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME, SL_IID_PLAYBACKRATE,
+                                  SL_IID_MUTESOLO};
+    const SLboolean req[4] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
 
-    // player
-    (*engineEngine)->CreateAudioPlayer(engineEngine, &pcmPlayerObject, &slDataSource, &audioSink, 3,
-                                       ids, reqs);
+    (*engineEngine)->CreateAudioPlayer(engineEngine, &pcmPlayerObject, &slDataSource, &audioSink, 4,
+                                       ids, req);
     (*pcmPlayerObject)->Realize(pcmPlayerObject, SL_BOOLEAN_FALSE);
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_PLAY, &pcmPlayerPlay);
 
@@ -165,12 +171,12 @@ int PaAudio::getCurrentSampleRateForOpensles(int sample_rate) {
 }
 
 
-int PaAudio::resampleAudio() {
+int PaAudio::resampleAudio(void **pcmBuffer) {
     while (paPlayStatus != NULL && !paPlayStatus->isExist) {
         if (paPlayStatus->seek) {
-            LOGE("PaAudio decode seek wait")
+//            LOGE("PaAudio decode seek wait")
             pthread_cond_wait(&paPlayStatus->seekCon, NULL);
-            LOGE("PaAudio decode seek up")
+//            LOGE("PaAudio decode seek up")
         }
 
         avPacket = av_packet_alloc();
@@ -220,17 +226,15 @@ int PaAudio::resampleAudio() {
             /**
              * 最终目标 data,data_size
              */
-            int nb = swr_convert(swrContext, &buffer, avFrame->nb_samples,
-                                 (const uint8_t **) avFrame->data, avFrame->nb_samples);
+            nb = swr_convert(swrContext, &buffer, avFrame->nb_samples,
+                             (const uint8_t **) avFrame->data, avFrame->nb_samples);
             int out_channels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
             // cal time
             now_time = avFrame->pts * av_q2d(time_base);
-            if (now_time < clock) {
-                now_time = clock;
-            }
-            clock = now_time;
+
+            *pcmBuffer = buffer;
 
 //            LOGE("data size is %d", data_size);
             av_packet_free(&avPacket);
@@ -305,17 +309,17 @@ void PaAudio::setMute(int mute) {
                 break;
             case 2:
                 // stereo
-                (*pcmMute)->SetChannelMute(pcmMute, 0, true);
-                (*pcmMute)->SetChannelMute(pcmMute, 1, true);
+                (*pcmMute)->SetChannelMute(pcmMute, 0, false);
+                (*pcmMute)->SetChannelMute(pcmMute, 1, false);
                 break;
         }
     }
 }
 
-void PaAudio::setSpeed(float speed) {
+void PaAudio::setTempo(float tempo) {
     if (soundTouch != NULL) {
-        this->speed = speed;
-        soundTouch->setTempo(speed);
+        this->tempo = tempo;
+        soundTouch->setTempo(tempo);
     }
 }
 
@@ -326,7 +330,22 @@ void PaAudio::setPitch(float pitch) {
     }
 }
 
-void PaAudio::getSoundTouchData() {
-
-
+int PaAudio::getSoundTouchData() {
+    while (paPlayStatus != NULL && !paPlayStatus->isExist) {
+        int num = 0;
+        data_size = resampleAudio(reinterpret_cast<void **>(&out_buffer));
+        if (data_size > 0) {
+            for (int i = 0; i < data_size / 2 + 1; i++) {
+                sampleBuffer[i] = (out_buffer[i * 2] | ((out_buffer[i * 2 + 1]) << 8));
+            }
+            soundTouch->putSamples(sampleBuffer, nb);
+            num = soundTouch->receiveSamples(sampleBuffer, data_size / 4);
+        } else {
+            soundTouch->flush();
+        }
+        if (num != 0) {
+            return num;
+        }
+    }
+    return 0;
 }

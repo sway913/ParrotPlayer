@@ -45,6 +45,11 @@ public:
     void setVolume(int volumePercent);
 
     void setMute(int mute);
+
+    void setPitch(float pitch);
+
+    void setTempo(float tempo);
+
 };
 
 

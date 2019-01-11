@@ -146,7 +146,7 @@ void PaFFmpeg::seek(int seconds) {
             paAudio->pause();
             paPlayStatus->seek = true;
             // reset time
-            paAudio->clock = 0;
+            paAudio->now_time = 0;
             paAudio->last_time = 0;
             //
             paAudio->paQueue->clearAvPacket();
@@ -170,6 +170,18 @@ void PaFFmpeg::setVolume(int volumePercent) {
 void PaFFmpeg::setMute(int mute) {
     if (paAudio != NULL) {
         paAudio->setMute(mute);
+    }
+}
+
+void PaFFmpeg::setPitch(float pitch) {
+    if (paAudio != NULL) {
+        paAudio->setPitch(pitch);
+    }
+}
+
+void PaFFmpeg::setTempo(float tempo) {
+    if (paAudio != NULL) {
+        paAudio->setTempo(tempo);
     }
 }
 

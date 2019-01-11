@@ -101,21 +101,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="onSpeed"
+            android:onClick="onTempo"
             android:text="变速不变调" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="onTone"
+            android:onClick="onPitch"
             android:text="变调不变速" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="onSpeedTone"
+            android:onClick="onTempoTone"
             android:text="变调又变速" />
 
         <Button

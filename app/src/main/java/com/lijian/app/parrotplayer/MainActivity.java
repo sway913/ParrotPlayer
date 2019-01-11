@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
         verifyStoragePermissions(this);
 
         parrotPlayer = new ParrotPlayer();
+        parrotPlayer.setPitch(1.5f);
+        parrotPlayer.setTempo(1.5f);
         parrotPlayer.setOnPreparedListener(new OnPreparedListener() {
             @Override
             public void onPrepared() {
@@ -188,7 +190,9 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param view
      */
-    public void onSpeed(View view) {
+    public void onTempo(View view) {
+        parrotPlayer.setTempo(1.5f);
+        parrotPlayer.setPitch(1.0f);
     }
 
     /**
@@ -196,7 +200,9 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param view
      */
-    public void onTone(View view) {
+    public void onPitch(View view) {
+        parrotPlayer.setTempo(1.0f);
+        parrotPlayer.setPitch(1.5f);
     }
 
     /**
@@ -204,7 +210,9 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param view
      */
-    public void onSpeedTone(View view) {
+    public void onTempoTone(View view) {
+        parrotPlayer.setTempo(1.5f);
+        parrotPlayer.setPitch(1.5f);
     }
 
     /**
@@ -213,5 +221,7 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void onNormalSpeedPitch(View view) {
+        parrotPlayer.setTempo(1.0f);
+        parrotPlayer.setPitch(1.0f);
     }
 }

@@ -109,8 +109,8 @@ public class ParrotPlayer {
         n_setMute(mute);
     }
 
-    public void setSpeed(float speed) {
-        n_setSpeed(speed);
+    public void setTempo(float tempo) {
+        n_setTempo(tempo);
     }
 
     public void setPitch(float pitch) {
@@ -133,7 +133,7 @@ public class ParrotPlayer {
 
     private native void n_setMute(int mute);
 
-    private native void n_setSpeed(float speed);
+    private native void n_setTempo(float tempo);
 
     private native void n_setPitch(float pitch);
 

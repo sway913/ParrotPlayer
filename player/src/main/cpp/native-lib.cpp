@@ -96,16 +96,16 @@ Java_com_lijian_app_player_ParrotPlayer_n_1setMute(JNIEnv *env, jobject instance
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_lijian_app_player_ParrotPlayer_n_1setSpeed(JNIEnv *env, jobject instance, jfloat speed) {
-
-    // TODO
-
+Java_com_lijian_app_player_ParrotPlayer_n_1setTempo(JNIEnv *env, jobject instance, jfloat tempo) {
+    if (paFFmpeg != NULL) {
+        paFFmpeg->setTempo(tempo);
+    }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_lijian_app_player_ParrotPlayer_n_1setPitch(JNIEnv *env, jobject instance, jfloat pitch) {
-
-    // TODO
-
+    if (paFFmpeg != NULL) {
+        paFFmpeg->setPitch(pitch);
+    }
 }
