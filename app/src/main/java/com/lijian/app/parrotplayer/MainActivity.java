@@ -224,4 +224,20 @@ public class MainActivity extends AppCompatActivity {
         parrotPlayer.setTempo(1.0f);
         parrotPlayer.setPitch(1.0f);
     }
+
+    public void startRecord(View view) {
+
+    }
+
+    public void pauseRecord(View view) {
+
+    }
+
+    public void goonRecord(View view) {
+
+    }
+
+    public void stopRecord(View view) {
+
+    }
 }
