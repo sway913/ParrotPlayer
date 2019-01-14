@@ -19,6 +19,7 @@ public:
     jobject jb;
     jmethodID jmethodID_onCallPrepared;
     jmethodID jmethodID_onCallTimeInfo;
+    jmethodID jmethodID_onCallVolumeDB;
 
 public:
     PaCallJava(JavaVM *javaVM, JNIEnv *jniEnv, jobject jb);
@@ -28,6 +29,8 @@ public:
     void callOnPrepared(int type);
 
     void callOnTimeInfo(int type, int totalTime, int currTime);
+
+    void callOnVolumeDB(int type, int db);
 };
 
 

@@ -53,6 +53,9 @@ void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bufferQueue, void *context)
             // record
 
             // volume db
+            paAudio->paCallJava->callOnVolumeDB(CHILD_THREAD, paAudio->getPCMDB(
+                    reinterpret_cast<char *>(paAudio->sampleBuffer),
+                    bufferSize * 4));
 
             (*paAudio->pcmBufferQueue)->Enqueue(paAudio->pcmBufferQueue,
                                                 (char *) paAudio->sampleBuffer, bufferSize * 2 * 2);
@@ -347,5 +350,21 @@ int PaAudio::getSoundTouchData() {
             return num;
         }
     }
+    return 0;
+}
+
+int PaAudio::getPCMDB(char *pcmdata, size_t pcmsize) {
+    int db = 0;
+    short int pervalue = 0;
+    double sum = 0;
+    for (int i = 0; i < pcmsize; i += 2) {
+        memcpy(&pervalue, pcmdata + i, 2);
+        sum += abs(pervalue);
+    }
+    sum = sum / (pcmsize / 2);
+    if (sum > 0) {
+        db = (int) 20.0 * log10(sum);
+    }
+
     return 0;
 }

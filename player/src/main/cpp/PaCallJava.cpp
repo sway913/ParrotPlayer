@@ -19,6 +19,7 @@ PaCallJava::PaCallJava(JavaVM *javaVM, JNIEnv *jniEnv, jobject obj) {
     }
     jmethodID_onCallPrepared = jniEnv->GetMethodID(jlz, "onCallPrepared", "()V");
     jmethodID_onCallTimeInfo = jniEnv->GetMethodID(jlz, "onCallTimeInfo", "(II)V");
+    jmethodID_onCallVolumeDB = jniEnv->GetMethodID(jlz, "onCallVolumeDB", "(I)V");
 }
 
 void PaCallJava::callOnPrepared(int type) {
@@ -37,16 +38,31 @@ void PaCallJava::callOnPrepared(int type) {
 
 void PaCallJava::callOnTimeInfo(int type, int totalTime, int currTime) {
     if (type == MAIN_THREAD) {
-        jniEnv->CallVoidMethod(jb, jmethodID_onCallTimeInfo,totalTime,currTime);
+        jniEnv->CallVoidMethod(jb, jmethodID_onCallTimeInfo, totalTime, currTime);
     } else if (type == CHILD_THREAD) {
         JNIEnv *jniEnv;
         if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
             LOGE("onCallTimeInfo attach jni fail");
             return;
         }
-        jniEnv->CallVoidMethod(jb, jmethodID_onCallTimeInfo,totalTime,currTime);
+        jniEnv->CallVoidMethod(jb, jmethodID_onCallTimeInfo, totalTime, currTime);
         javaVM->DetachCurrentThread();
     }
+}
+
+void PaCallJava::callOnVolumeDB(int type, int db) {
+    if (type == MAIN_THREAD) {
+        jniEnv->CallVoidMethod(jb, jmethodID_onCallVolumeDB, db);
+    } else if (type == CHILD_THREAD) {
+        JNIEnv *jniEnv;
+        if (javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK) {
+            LOGE("onCallTimeInfo attach jni fail");
+            return;
+        }
+        jniEnv->CallVoidMethod(jb, jmethodID_onCallVolumeDB, db);
+        javaVM->DetachCurrentThread();
+    }
+
 }
 
 
