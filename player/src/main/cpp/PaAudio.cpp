@@ -41,7 +41,6 @@ void PaAudio::play() {
 void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bufferQueue, void *context) {
     PaAudio *paAudio = (PaAudio *) context;
     if (paAudio != NULL) {
-//        int bufferSize = paAudio->resampleAudio(reinterpret_cast<void **>(&paAudio->sampleBuffer));
         int bufferSize = paAudio->getSoundTouchData();
         if (bufferSize > 0) {
             // tell timeinfo
@@ -210,10 +209,12 @@ int PaAudio::resampleAudio(void **pcmBuffer) {
 
             SwrContext *swrContext;
             swrContext = swr_alloc_set_opts(NULL,
-                                            AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16,
+                                            AV_CH_LAYOUT_STEREO,
+                                            AV_SAMPLE_FMT_S16,
                                             avFrame->sample_rate,
                                             avFrame->channel_layout,
-                                            (AVSampleFormat) avFrame->format, avFrame->sample_rate,
+                                            (AVSampleFormat) avFrame->format,
+                                            avFrame->sample_rate,
                                             NULL,
                                             NULL);
             if (!swrContext || swr_init(swrContext) < 0) {
@@ -226,11 +227,12 @@ int PaAudio::resampleAudio(void **pcmBuffer) {
                 swr_free(&swrContext);
             }
 
-            /**
-             * 最终目标 data,data_size
-             */
-            nb = swr_convert(swrContext, &buffer, avFrame->nb_samples,
-                             (const uint8_t **) avFrame->data, avFrame->nb_samples);
+            nb = swr_convert(swrContext,
+                             &buffer,
+                             avFrame->nb_samples,
+                             (const uint8_t **) avFrame->data,
+                             avFrame->nb_samples);
+
             int out_channels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
@@ -365,6 +367,5 @@ int PaAudio::getPCMDB(char *pcmdata, size_t pcmsize) {
     if (sum > 0) {
         db = (int) 20.0 * log10(sum);
     }
-
-    return 0;
+    return db;
 }
